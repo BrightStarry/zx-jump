@@ -24,14 +24,17 @@ public class ProxyUtil {
 	 *
 	 * @param isCloseOnError 异常时是否关闭
 	 */
-//	public static boolean writeAndFlush(ChannelHandlerContext ctx,Object msg, boolean isCloseOnError) {
-//		if(ctx.channel().isWritable())
-//			ctx.writeAndFlush(msg);
-//		else
-//			if (isCloseOnError)
-//				ctx.close();
-//
-//	}
+	public static boolean writeAndFlush(ChannelHandlerContext ctx,Object msg, boolean isCloseOnError) {
+		if(ctx.channel().isWritable()){
+			ctx.writeAndFlush(msg);
+			return true;
+		}
+		else
+			if (isCloseOnError)
+				ctx.close();
+		return false;
+
+	}
 
 
 

@@ -40,7 +40,7 @@ public class ProxyConfig {
 
 		@Max(value = Integer.MAX_VALUE,message = "maxContentLength长度需要小于Integer.MAX_VALUE")
 		@Min(value = 6553600,message = "maxContentLength长度需要大于6553600")
-		private Integer maxContentLength = 6553600;
+		private Integer maxContentLength = Integer.MAX_VALUE;
 
 		/**
 		 * 连接到目标主机超时时间

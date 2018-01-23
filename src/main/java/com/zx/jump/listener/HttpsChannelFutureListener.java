@@ -44,7 +44,11 @@ public class HttpsChannelFutureListener implements ChannelFutureListener {
 		//连接成功操作
 		if(future.isSuccess()){
 			//将客户端请求报文发送给服务端
-			future.channel().writeAndFlush(msg);
+			if(future.channel().isWritable()){
+				future.channel().writeAndFlush(msg);
+			}else{
+				future.channel().close();
+			}
 			return;
 		}
 		String channelId = ProxyUtil.getChannelId(ctx);

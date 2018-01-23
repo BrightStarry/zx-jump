@@ -36,8 +36,6 @@ public class HttpsConnectHandler extends ChannelInboundHandlerAdapter {
         String channelId = ProxyUtil.getChannelId(ctx);
         log.info(LOG_PRE + ",在目标服务器取消注册",channelId);
 
-        //刷出所有内容
-        ctx.flush();
         //关闭与客户端的通道
         ctx.close();
         //清除缓存
@@ -47,8 +45,7 @@ public class HttpsConnectHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx1, Object msg) throws Exception {
         //使用客户端通道的ctx,将消息发回给客户端
-        if(ctx.channel().isWritable())
-            ctx.writeAndFlush(msg);
+        ProxyUtil.writeAndFlush(ctx, msg,true);
 
     }
 
