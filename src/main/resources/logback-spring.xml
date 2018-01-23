@@ -7,21 +7,19 @@
             <pattern>
                 [%d{yyyy-MM-dd HH:mm:ss.SSS}] [%-36.36thread] [%-5level] [%-36.36logger{36}:%-4.4line] - %msg%n
             </pattern>
-
         </layout>
-
     </appender>
 
     <!--将Info级别日志每天输出到文件 配置-->
     <appender name="fileInfoLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <!--只过滤error级别的日志，相当于不再info日志中输出error级别的日志-->
-        <filter class="ch.qos.logback.classic.filter.LevelFilter">
-            <level>ERROR</level>
-            <!--匹配则禁止-->
-            <onMatch>DENY</onMatch>
-            <!--不匹配则接受-->
-            <onMismatch>ACCEPT</onMismatch>
-        </filter>
+        <!--<filter class="ch.qos.logback.classic.filter.LevelFilter">-->
+            <!--<level>ERROR</level>-->
+            <!--&lt;!&ndash;匹配则禁止&ndash;&gt;-->
+            <!--<onMatch>DENY</onMatch>-->
+            <!--&lt;!&ndash;不匹配则接受&ndash;&gt;-->
+            <!--<onMismatch>ACCEPT</onMismatch>-->
+        <!--</filter>-->
         <encoder>
             <pattern>
                 [%d{yyyy-MM-dd HH:mm:ss.SSS}] [%-36.36thread] [%-5level] [%-36.36logger{36}:%-4.4line] - %msg%n

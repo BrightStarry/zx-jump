@@ -27,8 +27,8 @@ import java.util.Objects;
 /**
  * author:ZhengXing
  * datetime:2018-01-21 14:05
- * 主服务 处理器
- * <p>
+ * 代理服务器 输入事件处理类
+ *
  * 可共享,线程安全
  */
 @Slf4j
@@ -40,11 +40,9 @@ public class ProxyServerHandler extends ChannelInboundHandlerAdapter {
 	//属性
 	private final ProxyConfig proxyConfig;
 
-
 	public ProxyServerHandler(ProxyConfig proxyConfig) {
 		this.proxyConfig = proxyConfig;
 	}
-
 
 	/**
 	 * 通道读取到消息 事件
@@ -62,16 +60,19 @@ public class ProxyServerHandler extends ChannelInboundHandlerAdapter {
                 //获取ip和端口
                 InetSocketAddress address = ProxyUtil.getAddressByRequest(request);
 
-                //HTTPS : 此处将用于报文编码解码的处理器去除,因为后面上方的信息都是加密过的,不符合一般报文格式,我们直接转发即可.
+                //HTTPS :
                 if (HttpMethod.CONNECT.equals(request.method())) {
                     log.info(LOG_PRE + ",https请求.目标:{}",channelId,request.uri());
-                    //直接响应成功 HTTP/1.1 200 Connection Established
-                    //此处没有添加Connection Established,似乎也没问题
-                    ctx.writeAndFlush(new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK));
+
+					//给客户端响应成功信息 HTTP/1.1 200 Connection Established
+					//此处没有添加Connection Established,似乎也没问题
+					ctx.writeAndFlush(new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK));
+
+					//此处将用于报文编码解码的处理器去除,因为后面上方的信息都是加密过的,不符合一般报文格式,我们直接转发即可
                     ctx.pipeline().remove(ProxyServer.NAME_HTTP_CODE_HANDLER);
                     ctx.pipeline().remove(ProxyServer.NAME_HTTP_AGGREGATOR_HANDLER);
                     //存入缓存
-                    ChannelCacheUtil.put(channelId, new ChannelCache(address, ctx, null));
+                    ChannelCacheUtil.put(channelId, new ChannelCache(address, null));
                     //此时 客户端已经和目标服务器 建立连接(其实是 客户端 -> 代理服务器 -> 目标服务器),
 					//直接退出等待下一次双方连接即可.
 
@@ -86,8 +87,8 @@ public class ProxyServerHandler extends ChannelInboundHandlerAdapter {
                 return;
             }
 
-			//其他格式数据(建立https connect后的客户端再次发送的加密数据):
 
+			//其他格式数据(建立https connect后的客户端再次发送的加密数据):
 			//从缓存获取到数据
 			ChannelCache cache = ChannelCacheUtil.get(ProxyUtil.getChannelId(ctx));
 			//如果缓存为空,应该是缓存已经过期,直接返回客户端请求超时
@@ -103,15 +104,18 @@ public class ProxyServerHandler extends ChannelInboundHandlerAdapter {
                         cache.setChannelFuture(
                                 connect(false, cache.getAddress(), ctx, msg, proxyConfig)));
             } else {
-                //此处,表示https协议的请求第x次访问(x > 2; 第一次我们响应200,第二次同目标主机建立连接, 第x次直接传输数据)
-                cache.getChannelFuture().channel().writeAndFlush(msg);
+                //此处,表示https协议的请求第x次访问(x > 2; 第一次我们响应200,第二次同目标主机建立连接, 此处直接发送消息即可)
+				//如果此时通道是可写的,写入消息
+				if(cache.getChannelFuture().channel().isWritable())
+                	cache.getChannelFuture().channel().writeAndFlush(msg);
+				else
+					ProxyUtil.responseFailedToClient(ctx);
             }
 		} catch (Exception e) {
 			log.error(LOG_PRE+ ",读取事件发生异常:{}",e.getMessage(),e);
-			//连接失败操作,暂且返回408,请求超时
+			//失败操作,暂且返回408,请求超时
 			ctx.writeAndFlush(new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.REQUEST_TIMEOUT));
 		}
-
 	}
 
 
@@ -136,8 +140,6 @@ public class ProxyServerHandler extends ChannelInboundHandlerAdapter {
 		}
 	}
 
-
-
 	/**
 	 * 异常处理
 	 */
@@ -145,7 +147,7 @@ public class ProxyServerHandler extends ChannelInboundHandlerAdapter {
 	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
 		log.error(LOG_PRE + ",发生异常:{}", ProxyUtil.getChannelId(ctx), cause.getMessage(), cause);
 		//关闭
-		ctx.channel().close();
+		ctx.close();
 	}
 
 	/**
@@ -174,9 +176,6 @@ public class ProxyServerHandler extends ChannelInboundHandlerAdapter {
 	}
 
 
-
-
-
 	/**
 	 * 用于存储每个通道各自信息的缓存类
 	 */
@@ -187,8 +186,6 @@ public class ProxyServerHandler extends ChannelInboundHandlerAdapter {
 	public class ChannelCache {
 		//目标服务器的地址
 		private InetSocketAddress address;
-		//当前通道的上下文
-		private ChannelHandlerContext ctx;
 		//当前请求与目标主机建立的连接通道
 		private ChannelFuture channelFuture;
 	}

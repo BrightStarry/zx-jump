@@ -1,6 +1,7 @@
 package com.zx.jump.handler;
 
 import com.zx.jump.util.ProxyUtil;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.FullHttpResponse;
@@ -28,6 +29,8 @@ public class HttpConnectHandler extends ChannelInboundHandlerAdapter {
 		this.ctx = ctx;
 	}
 
+
+
 	/**
 	 * 当目标服务器取消注册
 	 */
@@ -46,7 +49,8 @@ public class HttpConnectHandler extends ChannelInboundHandlerAdapter {
 			//目标主机的响应数据
 			FullHttpResponse response = (FullHttpResponse) msg;
 			//发回给客户端
-			ctx.writeAndFlush(msg);
+			if(ctx.channel().isWritable())
+				ctx.writeAndFlush(msg).addListener(ChannelFutureListener.CLOSE);
 	}
 
 

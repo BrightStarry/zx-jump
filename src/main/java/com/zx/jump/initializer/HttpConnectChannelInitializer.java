@@ -27,6 +27,7 @@ public class HttpConnectChannelInitializer extends ChannelInitializer<SocketChan
 	 */
 	private final ProxyConfig proxyConfig;
 
+
 	public HttpConnectChannelInitializer(ChannelHandlerContext ctx,
 										 ProxyConfig proxyConfig) {
 		this.ctx = ctx;

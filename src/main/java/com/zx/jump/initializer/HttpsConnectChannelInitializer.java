@@ -20,8 +20,6 @@ public class HttpsConnectChannelInitializer extends ChannelInitializer<SocketCha
 	 */
 	private final ChannelHandlerContext ctx;
 
-
-
 	public HttpsConnectChannelInitializer(ChannelHandlerContext ctx) {
 		this.ctx = ctx;
 	}

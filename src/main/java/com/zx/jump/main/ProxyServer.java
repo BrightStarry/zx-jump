@@ -41,23 +41,18 @@ public class ProxyServer {
      * 处理输入事件,例如 收到消息/通道激活/通道绑定等
      */
     private final ProxyServerHandler proxyServerHandler;
-
-
     /**
      * 继承{@link io.netty.channel.ChannelOutboundHandlerAdapter}
      * 处理输出事件,例如写入事件 , 处理该代理服务器向 客户端发送回去的 报文等
      */
     private final ProxyServerOutboundHandler proxyServerOutboundHandler;
-
     private final ProxyConfig proxyConfig;
-
     @Autowired
     public ProxyServer(ProxyServerHandler proxyServerHandler, ProxyServerOutboundHandler proxyServerOutboundHandler, ProxyConfig proxyConfig) {
         this.proxyServerHandler = proxyServerHandler;
         this.proxyServerOutboundHandler = proxyServerOutboundHandler;
         this.proxyConfig = proxyConfig;
     }
-
 
     /**
      * 启动Netty server,监听指定端口的TCP连接.
@@ -84,7 +79,6 @@ public class ProxyServer {
                         socketChannel.pipeline()
                                 //心跳检测：超过xs未触发触发读取事件，则触发userEventTriggered()事件
 //                                .addLast("idleState handler",new IdleStateHandler(0,0,2, TimeUnit.SECONDS))
-                                //如果需要使用同一个实例在多个connect,需要声明@Shareable
 
                                 //组合了http请求解码器和http响应编码器的一个类,可自定义各种最大长度
                                 .addLast(NAME_HTTP_CODE_HANDLER, new HttpServerCodec())
@@ -94,7 +88,6 @@ public class ProxyServer {
                                 .addLast(proxyServerOutboundHandler)
                                 //自定义 客户端输入事件 处理器
                                 .addLast(NAME_PROXY_SERVER_HANDLER, proxyServerHandler);
-
                     }
                 })
                 /**
@@ -121,7 +114,7 @@ public class ProxyServer {
         ChannelFuture future = serverBootStrap.bind(proxyConfig.getSocket().getProxyPort()).sync();
         //6 关闭前阻塞
         future.channel().closeFuture().sync();
-        //7 关闭线程组（优雅的。。。）
+        //7 关闭线程组
         bossGroup.shutdownGracefully().sync();
         workerGroup.shutdownGracefully().sync();
     }

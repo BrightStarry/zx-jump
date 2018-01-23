@@ -3,7 +3,10 @@ package com.zx.jump.util;
 import com.zx.jump.config.ProxyConfig;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpVersion;
 
 import java.net.InetSocketAddress;
 
@@ -13,6 +16,25 @@ import java.net.InetSocketAddress;
  * 工具类
  */
 public class ProxyUtil {
+
+
+	/**
+	 * 使用ctx发送消息
+	 * 会自动检测是否可写
+	 *
+	 * @param isCloseOnError 异常时是否关闭
+	 */
+//	public static boolean writeAndFlush(ChannelHandlerContext ctx,Object msg, boolean isCloseOnError) {
+//		if(ctx.channel().isWritable())
+//			ctx.writeAndFlush(msg);
+//		else
+//			if (isCloseOnError)
+//				ctx.close();
+//
+//	}
+
+
+
 	/**
 	 * 从channel中解析出客户端ip
 	 */
@@ -35,6 +57,13 @@ public class ProxyUtil {
 	 */
 	public static String getChannelId(ChannelHandlerContext ctx) {
 		return ctx.channel().id().asShortText();
+	}
+
+	/**
+	 * 使用ctx给客户端发送失败响应,默认就为请求超时
+	 */
+	public static void responseFailedToClient(ChannelHandlerContext ctx) {
+		ctx.writeAndFlush(new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.REQUEST_TIMEOUT));
 	}
 
 }

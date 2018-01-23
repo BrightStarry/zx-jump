@@ -47,7 +47,8 @@ public class HttpsConnectHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx1, Object msg) throws Exception {
         //使用客户端通道的ctx,将消息发回给客户端
-        ctx.writeAndFlush(msg);
+        if(ctx.channel().isWritable())
+            ctx.writeAndFlush(msg);
 
     }
 

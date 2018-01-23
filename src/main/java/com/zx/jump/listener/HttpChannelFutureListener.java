@@ -45,7 +45,7 @@ public class HttpChannelFutureListener implements ChannelFutureListener {
 			return;
 		}
 		//连接失败操作,暂且返回408,请求超时
-		ctx.writeAndFlush(new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.REQUEST_TIMEOUT));
+		ProxyUtil.responseFailedToClient(ctx);
 
 		Throwable cause = future.cause();
 		if(cause instanceof ConnectTimeoutException)
@@ -53,7 +53,7 @@ public class HttpChannelFutureListener implements ChannelFutureListener {
 		else if (cause instanceof UnknownHostException)
 			log.error(LOG_PRE + ",未知主机:{}", ProxyUtil.getChannelId(ctx), cause.getMessage());
 		else
-			log.error(LOG_PRE + ",建立连接异常:{}", ProxyUtil.getChannelId(ctx),cause.getMessage(),cause);
+			log.error(LOG_PRE + ",异常:{}", ProxyUtil.getChannelId(ctx),cause.getMessage(),cause);
 
 		//并关闭 与客户端的连接
 		ctx.close();

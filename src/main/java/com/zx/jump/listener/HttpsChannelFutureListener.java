@@ -6,6 +6,7 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ConnectTimeoutException;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
@@ -47,20 +48,22 @@ public class HttpsChannelFutureListener implements ChannelFutureListener {
 			return;
 		}
 		String channelId = ProxyUtil.getChannelId(ctx);
-		//连接失败操作,暂且返回408,请求超时
-		ctx.writeAndFlush(new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.REQUEST_TIMEOUT));
+		//给客户端响应连接超时信息
+		ProxyUtil.responseFailedToClient(ctx);
 		//清除缓存
 		ChannelCacheUtil.remove(channelId);
 
+		//日志记录
 		Throwable cause = future.cause();
 		if(cause instanceof ConnectTimeoutException)
 			log.error(LOG_PRE + ",连接超时:{}",channelId , cause.getMessage());
 		else if (cause instanceof UnknownHostException)
 			log.error(LOG_PRE + ",未知主机:{}", channelId, cause.getMessage());
 		else
-			log.error(LOG_PRE + ",建立连接异常:{}", channelId,cause.getMessage(),cause);
+			log.error(LOG_PRE + ",异常:{}", channelId,cause.getMessage(),cause);
 
-		//并关闭 与客户端的连接
+
+		//关闭 与客户端的连接
 		ctx.close();
 	}
 }
