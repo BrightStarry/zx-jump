@@ -44,6 +44,7 @@ public class HttpsConnectHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx1, Object msg) throws Exception {
+        log.info(LOG_PRE + ",读取到响应.",ProxyUtil.getChannelId(ctx));
         //使用客户端通道的ctx,将消息发回给客户端
         ProxyUtil.writeAndFlush(ctx, msg,true);
 

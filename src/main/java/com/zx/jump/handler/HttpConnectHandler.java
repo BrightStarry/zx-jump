@@ -58,6 +58,7 @@ public class HttpConnectHandler extends ChannelInboundHandlerAdapter {
 	public void channelRead(ChannelHandlerContext ctx0, Object msg) throws Exception {
 			//目标主机的响应数据
 //			FullHttpResponse response = (FullHttpResponse) msg;
+		log.info(LOG_PRE + ",读取到响应.",ProxyUtil.getChannelId(ctx));
 			//发回给客户端
 		ProxyUtil.writeAndFlush(ctx, msg, true);
 	}

@@ -75,6 +75,7 @@ public class ProxyServerHandler extends ChannelInboundHandlerAdapter {
                 //此处将用于报文编码解码的处理器去除,因为后面上方的信息都是加密过的,不符合一般报文格式,我们直接转发即可
                 ctx.pipeline().remove(ProxyServer.NAME_HTTP_CODE_HANDLER);
                 ctx.pipeline().remove(ProxyServer.NAME_HTTP_AGGREGATOR_HANDLER);
+
                 //存入缓存
                 ChannelCacheUtil.put(channelId, new ChannelCache(address, null));
                 //此时 客户端已经和目标服务器 建立连接(其实是 客户端 -> 代理服务器 -> 目标服务器),
@@ -97,6 +98,7 @@ public class ProxyServerHandler extends ChannelInboundHandlerAdapter {
         ChannelCache cache = ChannelCacheUtil.get(ProxyUtil.getChannelId(ctx));
         //如果缓存为空,应该是缓存已经过期,直接返回客户端请求超时,并关闭连接
         if (Objects.isNull(cache)) {
+            log.info(LOG_PRE + ",缓存过期", channelId);
             ProxyUtil.writeAndFlush(ctx, new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.REQUEST_TIMEOUT), false);
             ctx.close();
             return;
@@ -104,17 +106,22 @@ public class ProxyServerHandler extends ChannelInboundHandlerAdapter {
 
         //HTTPS: 如果此时 与目标服务器建立的连接通道 为空,则表示是Https协议,客户端第二次传输数据过来
         if (Objects.isNull(cache.getChannelFuture())) {
+            log.info(LOG_PRE + ",https,正在与目标建立连接");
             //连接到目标服务器,获取到 连接通道,并将该通道更新到缓存中
             ChannelCacheUtil.put(channelId,
                     cache.setChannelFuture(
                             connect(false, cache.getAddress(), ctx, msg, proxyConfig)));
         } else {
+
             //此处,表示https协议的请求第x次访问(x > 2; 第一次我们响应200,第二次同目标主机建立连接, 此处直接发送消息即可)
             //如果此时通道是可写的,写入消息
-            if (cache.getChannelFuture().channel().isWritable())
+            if (cache.getChannelFuture().channel().isWritable()) {
+                log.info(LOG_PRE + ",https,正在向目标发送后续消息");
                 cache.getChannelFuture().channel().writeAndFlush(msg);
-            else
+            } else {
+                log.info(LOG_PRE + ",https,与目标通道不可写,关闭与客户端连接");
                 ProxyUtil.responseFailedToClient(ctx);
+            }
         }
 
     }

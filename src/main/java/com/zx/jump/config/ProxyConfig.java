@@ -54,6 +54,16 @@ public class ProxyConfig {
 		@Range(min = 1024,max = 49151,message = "服务器监听端口范围有误(1024-49151)")
 		private Integer proxyPort = 9000;
 
+		/**
+		 * 处理客户端TCP连接的线程数
+		 */
+		@Range(min = 1,max = 500,message = "处理客户端TCP连接的线程数范围有误(1-500)")
+		private Integer clientThreadNum = 8;
 
+		/**
+		 * 处理具体事件的线程数 (注意,该数目将会 * 2 ,因为除了代理服务器的事件外,还需要处理目标服务器通信的事件)
+		 */
+		@Range(min = 1,max = 500,message = "处理客户端TCP连接的线程数范围有误(1-500)")
+		private Integer eventThreadNum = 8;
 	}
 }

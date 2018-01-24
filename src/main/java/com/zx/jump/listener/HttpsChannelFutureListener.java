@@ -40,9 +40,10 @@ public class HttpsChannelFutureListener implements ChannelFutureListener {
 
 	@Override
 	public void operationComplete(ChannelFuture future) throws Exception {
-
+		String channelId = ProxyUtil.getChannelId(ctx);
 		//连接成功操作
 		if(future.isSuccess()){
+			log.info(LOG_PRE + ",与目标主机建立连接成功.");
 			//将客户端请求报文发送给服务端
 			if(future.channel().isWritable()){
 				future.channel().writeAndFlush(msg);
@@ -51,7 +52,7 @@ public class HttpsChannelFutureListener implements ChannelFutureListener {
 			}
 			return;
 		}
-		String channelId = ProxyUtil.getChannelId(ctx);
+		log.info(LOG_PRE + ",与目标主机建立连接失败.",channelId);
 		//给客户端响应连接超时信息
 		ProxyUtil.responseFailedToClient(ctx);
 		//清除缓存
@@ -65,8 +66,7 @@ public class HttpsChannelFutureListener implements ChannelFutureListener {
 			log.error(LOG_PRE + ",未知主机:{}", channelId, cause.getMessage());
 		else
 			log.error(LOG_PRE + ",异常:{}", channelId,cause.getMessage(),cause);
-
-
+		log.info(LOG_PRE + ",给客户端响应失败信息成功.",channelId);
 		//关闭 与客户端的连接
 		ctx.close();
 	}

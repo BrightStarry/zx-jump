@@ -2,11 +2,14 @@ package com.zx.jump.util;
 
 import com.zx.jump.config.ProxyConfig;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
+import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
 
@@ -15,6 +18,7 @@ import java.net.InetSocketAddress;
  * datetime:2018-01-21 17:12
  * 工具类
  */
+@Slf4j
 public class ProxyUtil {
 
 
@@ -26,14 +30,19 @@ public class ProxyUtil {
 	 */
 	public static boolean writeAndFlush(ChannelHandlerContext ctx,Object msg, boolean isCloseOnError) {
 		if(ctx.channel().isWritable()){
-			ctx.writeAndFlush(msg);
+			log.info("通道id:{},正在向客户端写入数据.",getChannelId(ctx));
+			ctx.writeAndFlush(msg).addListener((ChannelFutureListener) future -> {
+				if(future.isSuccess())
+					log.info("通道id:{},向客户端写入数据成功.",getChannelId(ctx));
+				else
+					log.info("通道id:{},向客户端写入数据失败.",getChannelId(ctx));
+			});
 			return true;
 		}
 		else
 			if (isCloseOnError)
 				ctx.close();
 		return false;
-
 	}
 
 

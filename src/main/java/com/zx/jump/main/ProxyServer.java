@@ -62,9 +62,9 @@ public class ProxyServer {
     public void start() {
 
         //1 用于接收Client的连接 的线程组
-        EventLoopGroup bossGroup = new NioEventLoopGroup(8);
+        EventLoopGroup bossGroup = new NioEventLoopGroup(proxyConfig.getSocket().getClientThreadNum());
         //2 用于实际业务操作的线程组
-        EventLoopGroup workerGroup = new NioEventLoopGroup(30);
+        EventLoopGroup workerGroup = new NioEventLoopGroup(proxyConfig.getSocket().getEventThreadNum());
         //3 创建一个辅助类Bootstrap（引导程序）,对server进行配置
         ServerBootstrap serverBootStrap = new ServerBootstrap();
         //4 将两个线程组加入 bootstrap

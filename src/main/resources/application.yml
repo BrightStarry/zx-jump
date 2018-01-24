@@ -15,6 +15,9 @@ custom:
     max-content-length: 2147483647
     connect-timeout-millis: 3000
     proxy-port: 9000
+    client-thread-num: 2
+    event-thread-num: 4
+
 
 
 

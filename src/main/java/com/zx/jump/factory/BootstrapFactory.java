@@ -20,7 +20,7 @@ public class BootstrapFactory {
     @Autowired
     public BootstrapFactory (ProxyConfig proxyConfig) {
         this.bootstrap = new Bootstrap()
-            .group(new NioEventLoopGroup(30))
+            .group(new NioEventLoopGroup(proxyConfig.getSocket().getEventThreadNum()))
                 .channel(NioSocketChannel.class)
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, proxyConfig.getSocket().getConnectTimeoutMillis());
     }
