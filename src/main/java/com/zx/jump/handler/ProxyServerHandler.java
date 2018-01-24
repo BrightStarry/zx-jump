@@ -56,10 +56,9 @@ public class ProxyServerHandler extends ChannelInboundHandlerAdapter {
         //通道id
         String channelId = ProxyUtil.getChannelId(ctx);
 
-        //HTTP/HTTPS : 如果是 http报文格式的,此时已经被编码解码器转为了该类,如果不是,则表示是https协议建立第一次连接后后续的请求等.
+        //HTTP/HTTPS : 如果是 http报文格式的,此时已经被编码解码器转为了该类,
         if (msg instanceof FullHttpRequest) {
             final FullHttpRequest request = (FullHttpRequest) msg;
-
             //获取ip和端口
             InetSocketAddress address = ProxyUtil.getAddressByRequest(request);
 
@@ -67,35 +66,35 @@ public class ProxyServerHandler extends ChannelInboundHandlerAdapter {
             if (HttpMethod.CONNECT.equals(request.method())) {
                 log.info(LOG_PRE + ",https请求.目标:{}", channelId, request.uri());
 
-                //给客户端响应成功信息 HTTP/1.1 200 Connection Established  .失败时直接退出
+                //给客户端响应成功信息 HTTP/1.1 200 Connection Established  .如果失败时关闭客户端通道 - 该方法是自己封装的
                 //此处没有添加Connection Established,似乎也没问题
                 if (!ProxyUtil.writeAndFlush(ctx, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK), true))
                     return;
 
-                //此处将用于报文编码解码的处理器去除,因为后面上方的信息都是加密过的,不符合一般报文格式,我们直接转发即可
+                //此处将 该通道 的用于报文编码解码的处理器去除,因为后续发送的https报文都是加密过的,不符合一般报文格式,我们直接转发即可
                 ctx.pipeline().remove(ProxyServer.NAME_HTTP_CODE_HANDLER);
                 ctx.pipeline().remove(ProxyServer.NAME_HTTP_AGGREGATOR_HANDLER);
 
-                //存入缓存
+                //用通道id作为key,将 目标服务器地址存入, 此时 第二个参数(ChannelFuture)为null,因为 我们还未和目标服务器建立连接
                 ChannelCacheUtil.put(channelId, new ChannelCache(address, null));
-                //此时 客户端已经和目标服务器 建立连接(其实是 客户端 -> 代理服务器 -> 目标服务器),
-                //直接退出等待下一次双方连接即可.
 
+                //直接退出等待下一次双方连接即可.
                 return;
             }
-            //HTTP:
+            //HTTP: 运行到这里表示是http请求
             log.info(LOG_PRE + ",http请求.目标:{}", channelId, request.uri());
 
-            //http所有通道都不会复用,无需缓存
+            //连接到目标服务器.并将当前的通道上下文(ctx)/请求报文(msg) 传入
             connect(true, address, ctx, msg, proxyConfig);
 
             return;
         }
 
-
         //其他格式数据(建立https connect后的客户端再次发送的加密数据):
-        //从缓存获取到数据
+
+        //从缓存获取之前处理https请求时缓存的 目标服务器地址 和 与目标服务器的连接通道
         ChannelCache cache = ChannelCacheUtil.get(ProxyUtil.getChannelId(ctx));
+
         //如果缓存为空,应该是缓存已经过期,直接返回客户端请求超时,并关闭连接
         if (Objects.isNull(cache)) {
             log.info(LOG_PRE + ",缓存过期", channelId);
@@ -104,7 +103,7 @@ public class ProxyServerHandler extends ChannelInboundHandlerAdapter {
             return;
         }
 
-        //HTTPS: 如果此时 与目标服务器建立的连接通道 为空,则表示是Https协议,客户端第二次传输数据过来
+        //HTTPS: 如果此时 与目标服务器建立的连接通道 为空,则表示这个Https协议,是客户端第二次传输数据过来,因为第一次我们只是返回客户端 200信息,并没有真的去连接目标服务器
         if (Objects.isNull(cache.getChannelFuture())) {
             log.info(LOG_PRE + ",https,正在与目标建立连接");
             //连接到目标服务器,获取到 连接通道,并将该通道更新到缓存中
@@ -120,10 +119,10 @@ public class ProxyServerHandler extends ChannelInboundHandlerAdapter {
                 cache.getChannelFuture().channel().writeAndFlush(msg);
             } else {
                 log.info(LOG_PRE + ",https,与目标通道不可写,关闭与客户端连接");
+                //返回 表示失败的 408状态码响应
                 ProxyUtil.responseFailedToClient(ctx);
             }
         }
-
     }
 
 
@@ -165,15 +164,17 @@ public class ProxyServerHandler extends ChannelInboundHandlerAdapter {
                                   ChannelHandlerContext ctx, Object msg,
                                   ProxyConfig proxyConfig) {
         ChannelFuture channelFuture;
-        //用工厂类构建bootstrap,用来建立socket连接
+        //用工厂类构建出一个bootstrap,用来建立socket连接
         Bootstrap bootstrap = bootstrapFactory.build();
         //如果是http请求
         if (isHttp) {
-            //与目标主机建立连接,并设置该连接的 相关处理类
+            //与目标主机建立连接
             channelFuture = bootstrap
+                    //设置上http连接的通道初始化器
                     .handler(new HttpConnectChannelInitializer(ctx, proxyConfig))
+                    //连接
                     .connect(address);
-            //添加监听器,当连接建立成功后,转发客户端的消息给它
+            //添加监听器,当连接建立成功后.进行相应操作
             return channelFuture.addListener(new HttpChannelFutureListener(msg, ctx));
         }
         //如果是Https请求
