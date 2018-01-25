@@ -107,6 +107,7 @@ public class ProxyServer {
                 .option(ChannelOption.SO_BACKLOG, 2048)
                 //保持连接,类似心跳检测,超过2小时空闲才激活
 //                .childOption(ChannelOption.SO_KEEPALIVE, true)
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS,proxyConfig.getSocket().getConnectTimeoutMillis())
                 //接收缓冲区大小
                 .option(ChannelOption.SO_RCVBUF, 128 * 1024);
         log.info("代理服务器启动,在{}端口",proxyConfig.getSocket().getProxyPort());

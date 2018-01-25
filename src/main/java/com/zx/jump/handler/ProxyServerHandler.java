@@ -99,13 +99,13 @@ public class ProxyServerHandler extends ChannelInboundHandlerAdapter {
         if (Objects.isNull(cache)) {
             log.info(LOG_PRE + ",缓存过期", channelId);
             ProxyUtil.writeAndFlush(ctx, new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.REQUEST_TIMEOUT), false);
-            ctx.close();
+//            ctx.close();
             return;
         }
 
         //HTTPS: 如果此时 与目标服务器建立的连接通道 为空,则表示这个Https协议,是客户端第二次传输数据过来,因为第一次我们只是返回客户端 200信息,并没有真的去连接目标服务器
         if (Objects.isNull(cache.getChannelFuture())) {
-            log.info(LOG_PRE + ",https,正在与目标建立连接");
+            log.info(LOG_PRE + ",https,正在与目标建立连接",channelId);
             //连接到目标服务器,获取到 连接通道,并将该通道更新到缓存中
             ChannelCacheUtil.put(channelId,
                     cache.setChannelFuture(
@@ -115,10 +115,10 @@ public class ProxyServerHandler extends ChannelInboundHandlerAdapter {
             //此处,表示https协议的请求第x次访问(x > 2; 第一次我们响应200,第二次同目标主机建立连接, 此处直接发送消息即可)
             //如果此时通道是可写的,写入消息
             if (cache.getChannelFuture().channel().isWritable()) {
-                log.info(LOG_PRE + ",https,正在向目标发送后续消息");
+                log.info(LOG_PRE + ",https,正在向目标发送后续消息",channelId);
                 cache.getChannelFuture().channel().writeAndFlush(msg);
             } else {
-                log.info(LOG_PRE + ",https,与目标通道不可写,关闭与客户端连接");
+                log.info(LOG_PRE + ",https,与目标通道不可写,关闭与客户端连接",channelId);
                 //返回 表示失败的 408状态码响应
                 ProxyUtil.responseFailedToClient(ctx);
             }
@@ -153,8 +153,8 @@ public class ProxyServerHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         log.error(LOG_PRE + ",发生异常:{}", ProxyUtil.getChannelId(ctx), cause.getMessage(), cause);
-        //关闭
-        ctx.close();
+//        //关闭
+//        ctx.close();
     }
 
     /**
