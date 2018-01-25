@@ -29,13 +29,13 @@ public class ProxyUtil {
 	 * @param isCloseOnError 异常时是否关闭
 	 */
 	public static boolean writeAndFlush(ChannelHandlerContext ctx,Object msg, boolean isCloseOnError) {
-		if(ctx.channel().isWritable()){
+		if(ctx.channel().isActive()){
 			log.info("通道id:{},正在向客户端写入数据.",getChannelId(ctx));
 			ctx.writeAndFlush(msg).addListener((ChannelFutureListener) future -> {
 				if(future.isSuccess())
 					log.info("通道id:{},向客户端写入数据成功.",getChannelId(ctx));
 				else
-					log.info("通道id:{},向客户端写入数据失败.",getChannelId(ctx));
+					log.info("通道id:{},向客户端写入数据失败.e:{}",getChannelId(ctx),future.cause().getMessage(),future.cause());
 			});
 			return true;
 		}

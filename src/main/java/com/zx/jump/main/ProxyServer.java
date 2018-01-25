@@ -12,6 +12,8 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.handler.codec.http.HttpRequestDecoder;
+import io.netty.handler.codec.http.HttpRequestEncoder;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.timeout.IdleStateHandler;
 import lombok.SneakyThrows;
@@ -32,6 +34,7 @@ import java.util.concurrent.TimeUnit;
 public class ProxyServer {
     //静态参数-netty处理器的名字,用于在https请求时,剔除channel中绑定的编解码相关处理类,因为https请求无法解析其加密的数据
     public static final String NAME_HTTP_CODE_HANDLER = "httpCode";
+    public static final String NAME_HTTP_CODE_HANDLER1 = "httpCode1";
     public static final String NAME_HTTP_AGGREGATOR_HANDLER = "httpAggregator";
     public static final String NAME_PROXY_SERVER_HANDLER = "proxyServerHandler";
 
@@ -81,11 +84,10 @@ public class ProxyServer {
 //                                .addLast("idleState handler",new IdleStateHandler(0,0,2, TimeUnit.SECONDS))
 
                                 //组合了http请求解码器和http响应编码器的一个类,可自定义各种最大长度
-                                .addLast(NAME_HTTP_CODE_HANDLER, new HttpServerCodec())
+                                .addLast(NAME_HTTP_CODE_HANDLER, new HttpRequestDecoder())
+                                .addLast(NAME_HTTP_CODE_HANDLER1, new HttpRequestEncoder())
                                 //消息聚合器,注意,需要添加在http编解码器(HttpServerCodec)之后
                                 .addLast(NAME_HTTP_AGGREGATOR_HANDLER, new HttpObjectAggregator(65536))
-                                //自定义 输入事件 处理器
-                                .addLast(proxyServerOutboundHandler)
                                 //自定义 客户端输入事件 处理器
                                 .addLast(NAME_PROXY_SERVER_HANDLER, proxyServerHandler);
                     }

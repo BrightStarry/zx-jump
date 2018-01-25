@@ -73,7 +73,7 @@ public class HttpConnectHandler extends ChannelInboundHandlerAdapter {
 		//关闭 与目标服务器的连接
 		ctx0.close();
 		//关闭 与客户端的连接
-//		ctx.close();
+		ctx.close();
 	}
 
 }

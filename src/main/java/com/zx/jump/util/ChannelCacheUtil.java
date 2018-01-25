@@ -21,7 +21,7 @@ public class ChannelCacheUtil {
 			//不限制缓存大小
 //			.maximumSize(10240)
 			//超过x秒未读写操作,自动删除
-			.expireAfterAccess(15, TimeUnit.SECONDS)
+			.expireAfterAccess(30, TimeUnit.SECONDS)
 			//传入缓存加载策略,key不存在时调用该方法返回一个value回去
 			//此处直接返回空
 			.build(key -> null);

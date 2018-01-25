@@ -241,3 +241,12 @@
                 如果不符合,即表示其为https请求的后续操作.
             >
         4. 因为考虑将该类设置为可供所有channel使用,所以,使用缓存,以便在https协议后续请求到来时,还能获取到之前的
+
+
+[2018-01-25 15:00:09.639] [nioEventLoopGroup-4-2               ] [INFO ] [c.zx.jump.handler.ProxyServerHandler:83  ] - [代理服务器处理类]通道id:38424a19,https请求.目标:www.google-analytics.com:443
+[2018-01-25 15:00:09.640] [nioEventLoopGroup-4-2               ] [INFO ] [com.zx.jump.util.ProxyUtil          :33  ] - 通道id:38424a19,正在向客户端写入数据.
+[2018-01-25 15:00:09.640] [nioEventLoopGroup-4-2               ] [INFO ] [com.zx.jump.util.ProxyUtil          :36  ] - 通道id:38424a19,向客户端写入数据成功.
+[2018-01-25 15:00:09.640] [nioEventLoopGroup-4-2               ] [INFO ] [c.zx.jump.handler.ProxyServerHandler:171 ] - [代理服务器处理类]通道id:38424a19读取完成.
+[2018-01-25 15:00:09.641] [nioEventLoopGroup-2-2               ] [INFO ] [c.z.j.l.HttpsChannelFutureListener  :46  ] - [https连接建立监听器]通道id:38424a19,与目标主机建立连接成功.
+[2018-01-25 15:00:09.889] [nioEventLoopGroup-4-2               ] [INFO ] [c.zx.jump.handler.ProxyServerHandler:171 ] - [代理服务器处理类]通道id:38424a19读取完成.
+[2018-01-25 15:00:09.892] [nioEventLoopGroup-4-2               ] [ERROR] [c.zx.jump.handler.ProxyServerHandler:200 ] - [代理服务器处理类]通道id:38424a19,发生异常:Connection reset by peer

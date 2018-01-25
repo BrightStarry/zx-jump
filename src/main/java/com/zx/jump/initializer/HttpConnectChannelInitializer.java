@@ -7,12 +7,17 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.HttpClientCodec;
 import io.netty.handler.codec.http.HttpObjectAggregator;
+import lombok.NoArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * author:ZhengXing
  * datetime:2018/1/22 0022 11:28
  * 用于客户端http请求的 通道初始化器
  */
+@Component
+@NoArgsConstructor
 public class HttpConnectChannelInitializer extends ChannelInitializer<SocketChannel> {
 
 	/**
@@ -21,17 +26,15 @@ public class HttpConnectChannelInitializer extends ChannelInitializer<SocketChan
 	 *
 	 * 此处将其传给http连接对应的处理器类
 	 */
-	private final ChannelHandlerContext ctx;
+	private  ChannelHandlerContext ctx;
 	/**
 	 * 属性
 	 */
-	private final ProxyConfig proxyConfig;
+	private static ProxyConfig proxyConfig;
 
 
-	public HttpConnectChannelInitializer(ChannelHandlerContext ctx,
-										 ProxyConfig proxyConfig) {
+	public HttpConnectChannelInitializer(ChannelHandlerContext ctx) {
 		this.ctx = ctx;
-		this.proxyConfig = proxyConfig;
 	}
 
 	@Override
@@ -45,4 +48,8 @@ public class HttpConnectChannelInitializer extends ChannelInitializer<SocketChan
 				.addLast(new HttpConnectHandler(ctx));
 	}
 
+	@Autowired
+	public void init(ProxyConfig proxyConfig) {
+		HttpConnectChannelInitializer.proxyConfig = proxyConfig;
+	}
 }

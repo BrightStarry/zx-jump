@@ -37,7 +37,7 @@ public class HttpsConnectHandler extends ChannelInboundHandlerAdapter {
         log.info(LOG_PRE + ",在目标服务器取消注册",channelId);
 
         //关闭与客户端的通道
-//        ctx.close();
+        ctx.close();
         //清除缓存
         ChannelCacheUtil.remove(channelId);
     }
@@ -61,7 +61,7 @@ public class HttpsConnectHandler extends ChannelInboundHandlerAdapter {
         //关闭 与目标服务器的连接
         ctx0.close();
         //关闭 与客户端的连接
-//        ctx.close();
+        ctx.close();
         //清除缓存
         ChannelCacheUtil.remove(channelId);
     }
