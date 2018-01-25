@@ -43,11 +43,7 @@ public class HttpChannelFutureListener implements ChannelFutureListener {
 		if(future.isSuccess()){
 			log.info(LOG_PRE + ",与目标主机建立连接成功.",channelId);
 			//将客户端请求报文发送给服务端
-			if(future.channel().isWritable()){
-				future.channel().writeAndFlush(msg);
-			}else{
-				future.channel().close();
-			}
+			future.channel().writeAndFlush(msg);
 			return;
 		}
 		log.info(LOG_PRE + ",与目标主机建立连接失败.",channelId);
@@ -62,5 +58,7 @@ public class HttpChannelFutureListener implements ChannelFutureListener {
 		else
 			log.error(LOG_PRE + ",异常:{}", ProxyUtil.getChannelId(ctx),cause.getMessage(),cause);
 		log.info(LOG_PRE + ",给客户端响应失败信息成功.",channelId);
+		//并关闭 与客户端的连接
+		ctx.close();
 	}
 }

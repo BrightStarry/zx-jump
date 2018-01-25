@@ -53,7 +53,7 @@ public class HttpsChannelFutureListener implements ChannelFutureListener {
 			return;
 		}
 		log.info(LOG_PRE + ",与目标主机建立连接失败.",channelId);
-		//给客户端响应连接超时信息, 关闭 与客户端的连接
+		//给客户端响应连接超时信息
 		ProxyUtil.responseFailedToClient(ctx);
 		//清除缓存
 		ChannelCacheUtil.remove(channelId);
@@ -67,5 +67,7 @@ public class HttpsChannelFutureListener implements ChannelFutureListener {
 		else
 			log.error(LOG_PRE + ",异常:{}", channelId,cause.getMessage(),cause);
 		log.info(LOG_PRE + ",给客户端响应失败信息成功.",channelId);
+		//关闭 与客户端的连接
+		ctx.close();
 	}
 }

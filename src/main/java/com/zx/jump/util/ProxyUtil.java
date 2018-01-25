@@ -20,6 +20,8 @@ import java.net.InetSocketAddress;
  */
 @Slf4j
 public class ProxyUtil {
+
+
 	/**
 	 * 使用ctx发送消息
 	 * 会自动检测是否可写
@@ -42,6 +44,8 @@ public class ProxyUtil {
 				ctx.close();
 		return false;
 	}
+
+
 
 	/**
 	 * 从channel中解析出客户端ip
@@ -71,7 +75,7 @@ public class ProxyUtil {
 	 * 使用ctx给客户端发送失败响应,默认就为请求超时
 	 */
 	public static void responseFailedToClient(ChannelHandlerContext ctx) {
-		writeAndFlush(ctx, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.REQUEST_TIMEOUT), false);
+		ctx.writeAndFlush(new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.REQUEST_TIMEOUT));
 	}
 
 }
