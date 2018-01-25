@@ -43,7 +43,7 @@ public class HttpsChannelFutureListener implements ChannelFutureListener {
 		String channelId = ProxyUtil.getChannelId(ctx);
 		//连接成功操作
 		if(future.isSuccess()){
-			log.info(LOG_PRE + ",与目标主机建立连接成功.");
+			log.info(LOG_PRE + ",与目标主机建立连接成功.",channelId);
 			//将客户端请求报文发送给服务端
 			if(future.channel().isWritable()){
 				future.channel().writeAndFlush(msg);
