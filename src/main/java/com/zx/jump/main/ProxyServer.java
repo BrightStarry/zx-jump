@@ -11,10 +11,7 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.codec.http.HttpObjectAggregator;
-import io.netty.handler.codec.http.HttpRequestDecoder;
-import io.netty.handler.codec.http.HttpRequestEncoder;
-import io.netty.handler.codec.http.HttpServerCodec;
+import io.netty.handler.codec.http.*;
 import io.netty.handler.timeout.IdleStateHandler;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -85,7 +82,7 @@ public class ProxyServer {
 
                                 //组合了http请求解码器和http响应编码器的一个类,可自定义各种最大长度
                                 .addLast(NAME_HTTP_CODE_HANDLER, new HttpRequestDecoder())
-                                .addLast(NAME_HTTP_CODE_HANDLER1, new HttpRequestEncoder())
+                                .addLast(NAME_HTTP_CODE_HANDLER1, new HttpResponseEncoder())
                                 //消息聚合器,注意,需要添加在http编解码器(HttpServerCodec)之后
                                 .addLast(NAME_HTTP_AGGREGATOR_HANDLER, new HttpObjectAggregator(65536))
                                 //自定义 客户端输入事件 处理器

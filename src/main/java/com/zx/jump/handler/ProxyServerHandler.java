@@ -85,10 +85,7 @@ public class ProxyServerHandler extends ChannelInboundHandlerAdapter {
                     //存入缓存
                     ChannelCacheUtil.put(channelId, new ChannelCache(address, connect(false, address, ctx, msg)));
 
-                    //给客户端响应成功信息 HTTP/1.1 200 Connection Established  .失败时直接退出
-                    //此处没有添加Connection Established,似乎也没问题
-                    if (!ProxyUtil.writeAndFlush(ctx, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK), true))
-                        return;
+
 
                     //此处将用于报文编码解码的处理器去除,因为后面上方的信息都是加密过的,不符合一般报文格式,我们直接转发即可
                     ctx.pipeline().remove(ProxyServer.NAME_HTTP_CODE_HANDLER);
@@ -96,9 +93,14 @@ public class ProxyServerHandler extends ChannelInboundHandlerAdapter {
                     ctx.pipeline().remove(ProxyServer.NAME_HTTP_AGGREGATOR_HANDLER);
 
 
+
+                    //给客户端响应成功信息 HTTP/1.1 200 Connection Established  .失败时直接退出
+                    //此处没有添加Connection Established,似乎也没问题
+                    if (!ProxyUtil.writeAndFlush(ctx, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK), true))
+                        return;
+
                     //此时 客户端已经和目标服务器 建立连接(其实是 客户端 -> 代理服务器 -> 目标服务器),
                     //直接退出等待下一次双方连接即可.
-
                     return;
                 }
                 //HTTP:
